@@ -8,8 +8,10 @@ var session = require('express-session');
 var dotenv = require('dotenv')
 var passport = require('passport');
 var Auth0Strategy = require('passport-auth0');
+var redis = require('redis');
+var connectRedis = require('connect-redis');
 
-dotenv.load();
+dotenv.load('/home/shiny/shiny-auth0/.env');
 
 var routes = require('./routes/index');
 var reports = require('./routes/reports');
@@ -55,20 +57,31 @@ app.set('view engine', 'pug');
 
 app.use(logger('dev'));
 app.use(cookieParser());
+
+// configure persistent session
+var redisStore = connectRedis(session);
+var client = redis.createClient();
 app.use(session({
+  name: 'shiny_auth',
   secret: process.env.COOKIE_SECRET,
-  resave: true,
-  saveUninitialized: true
+  store: new redisStore({ host: 'localhost', port: 6379, client: client, ttl: 86400 }),
+  resave: false,
+  cookie: {
+    httpOnly: false,
+    maxAge: 3600 * 1000
+  },
+  rolling: true,
+  saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/reports/', reports);
+app.use('/dashboards/', reports);
 app.use('/', routes);
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: false }));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

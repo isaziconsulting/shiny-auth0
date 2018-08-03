@@ -1,7 +1,5 @@
-var express = require('express');
-var passport = require('passport');
-var httpProxy = require('http-proxy');
-var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn()
+var express = require("express");
+var passport = require("passport");
 var router = express.Router();
 
 var env = process.env;
@@ -12,10 +10,9 @@ var authenticateWithPromptNone = passport.authenticate('auth0', {
   prompt: 'none'
 });
 
-
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.redirect('/reports/');
+router.get("/", function(req, res, next) {
+  res.redirect("/km-forecast/dashboards/");
 });
 
 router.get('/login',
@@ -26,7 +23,7 @@ router.get('/login',
     return authenticateWithDefaultPrompt(req, res, next);
   },
   function (req, res) {
-    res.redirect('/reports/');
+    res.redirect('/km-forecast/dashboards/');
   });
 
 router.get('/logout', function(req, res){
@@ -50,7 +47,7 @@ router.get('/callback',
       }
 
       if (info === 'login_required') {
-        return res.redirect('/login?sso=false');
+        return res.redirect('/km-forecast/login?sso=false');
       }
       
       if (user) {
@@ -58,7 +55,7 @@ router.get('/callback',
           if (err) {
             next(err);
           }
-          res.redirect(req.session.returnTo || '/reports/');
+          res.redirect(/*req.session.returnTo ||*/ '/km-forecast/dashboards/');
         });
       }
 

@@ -40,8 +40,11 @@ var proxy = httpProxy.createProxyServer({
 });
 
 server.on('upgrade', function (req, socket, head) {
-  req.url = req.url.substring(8);
-  proxy.ws(req, socket, head);
+  var match = req.url.match(/\/dashboards(.*)/);
+  if (match) {
+    req.url = match[1];
+    proxy.ws(req, socket, head);
+  }
 });
 
 
