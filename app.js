@@ -8,10 +8,9 @@ var session = require('express-session');
 var dotenv = require('dotenv')
 var passport = require('passport');
 var Auth0Strategy = require('passport-auth0');
-var redis = require('redis');
-var connectRedis = require('connect-redis');
+var MemoryStore = require('memorystore')(session)
 
-dotenv.load('/home/shiny/shiny-auth0/.env');
+dotenv.load();
 
 var routes = require('./routes/index');
 var reports = require('./routes/reports');
@@ -58,20 +57,19 @@ app.set('view engine', 'pug');
 app.use(logger('dev'));
 app.use(cookieParser());
 
-// configure persistent session
-var redisStore = connectRedis(session);
-var client = redis.createClient();
 app.use(session({
   name: 'shiny_auth',
   secret: process.env.COOKIE_SECRET,
-  store: new redisStore({ host: 'localhost', port: 6379, client: client, ttl: 86400 }),
   resave: false,
+  saveUninitialized: false,
+  store: new MemoryStore({
+    checkPeriod: 86400000 // prune expired entries every 24h
+  }),
   cookie: {
     httpOnly: false,
     maxAge: 3600 * 1000
   },
   rolling: true,
-  saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());
