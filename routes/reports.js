@@ -35,7 +35,7 @@ function ensureLoggedIn(req, res, next) {
     if (req.session) {
       req.session.returnTo = req.originalUrl || req.url;
     }
-    return res.redirect("/km-forecast/login");
+    return res.redirect("/login");
   }
   next();
 }
